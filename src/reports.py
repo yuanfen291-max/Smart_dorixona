@@ -1,14 +1,12 @@
 import sqlite3
-from datetime import datetime
+import os
 
 DB_NAME = 'smart_dorixona.db'
 
 def generate_receipt(sotuv_id):
-    """Генерация и сохранение текстового чека"""
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
 
-    # Получаем данные о продаже
     cursor.execute('''
         SELECT S.id, S.sana, S.jami_summa, S.tolov_turi, M.nomi, ST.miqdori, ST.narxi
         FROM Sotuv S
@@ -22,50 +20,25 @@ def generate_receipt(sotuv_id):
     conn.close()
 
     if not rows:
-        print("Продажа не найдена!")
         return
 
+    # Cheklar uchun papka ochish
+    os.makedirs("cheklar", exist_ok=True)
+    
     s_id, sana, jami_summa, tolov_turi, mahsulot_nomi, miqdor, narx = rows[0]
+    filename = f"cheklar/chek_{s_id}.txt"
 
-    filename = f"chek_{s_id}.txt"
     with open(filename, "w", encoding="utf-8") as file:
         file.write("===================================\n")
         file.write("        SMART DORIXONA CHEKI       \n")
         file.write("===================================\n")
-        file.write(f"Чек №: {s_id}\n")
-        file.write(f"Дата: {sana}\n")
+        file.write(f"Chek №: {s_id}\n")
+        file.write(f"Sana: {sana}\n")
         file.write("-----------------------------------\n")
-        file.write(f"Товар: {mahsulot_nomi}\n")
-        file.write(f"Количество: {miqdor} шт.\n")
-        file.write(f"Цена за шт: {narx} сум\n")
+        file.write(f"Mahsulot: {mahsulot_nomi}\n")
+        file.write(f"Miqdori: {miqdor} dona\n")
+        file.write(f"Narxi: {narx} so'm\n")
         file.write("-----------------------------------\n")
-        file.write(f"ИТОГО К ОПЛАТЕ: {jami_summa} сум\n")
-        file.write(f"Тип оплаты: {tolov_turi}\n")
+        file.write(f"JAMI: {jami_summa} so'm\n")
+        file.write(f"To'lov turi: {tolov_turi}\n")
         file.write("===================================\n")
-        file.write("    Спасибо за покупку! Будьте здоровы!\n")
-
-    print(f"Чек успешно сохранен в файл: {filename}")
-
-def get_daily_report():
-    """Отчёт по продажам за текущий день"""
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-
-    cursor.execute('''
-        SELECT COUNT(id), SUM(jami_summa)
-        FROM Sotuv
-        WHERE DATE(sana) = DATE('now')
-    ''')
-    
-    result = cursor.fetchone()
-    conn.close()
-
-    total_sales = result[0] or 0
-    total_revenue = result[1] or 0.0
-
-    print("\n" + "="*35)
-    print("      ОТЧЁТ ПО ПРОДАЖАМ ЗА СЕГОДНЯ    ")
-    print("="*35)
-    print(f"Всего совершенных продаж: {total_sales}")
-    print(f"Общая выручка: {total_revenue} сум")
-    print("="*35)
