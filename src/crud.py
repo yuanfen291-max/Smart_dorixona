@@ -8,6 +8,48 @@ def connect_db():
     conn.execute("PRAGMA foreign_keys = ON;")
     return conn
 
+def add_kategoriya(nomi):
+    conn = connect_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("INSERT INTO Kategoriya (nomi) VALUES (?)", (nomi,))
+        conn.commit()
+        print(f"Kategoriya muvaffaqiyatli qo'shildi: {nomi}")
+    except Exception as e:
+        print(f"Xatolik: {e}")
+    finally:
+        conn.close()
+
+def add_mahsulot(nomi, xalqaro_nomi, kategoriya_id, shakli, dozasi, retsept, ishlab_chiqaruvchi):
+    conn = connect_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('''
+            INSERT INTO Mahsulot (nomi, xalqaro_nomi, kategoriya_id, shakli, dozasi, retsept_kerakmi, ishlab_chiqaruvchi)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (nomi, xalqaro_nomi, kategoriya_id, shakli, dozasi, retsept, ishlab_chiqaruvchi))
+        conn.commit()
+        print(f"Dori muvaffaqiyatli qo'shildi: {nomi}")
+    except Exception as e:
+        print(f"Xatolik: {e}")
+    finally:
+        conn.close()
+
+def add_partiya(mahsulot_id, seriya_raqami, muddati, kelish_narxi, sotish_narxi, miqdori):
+    conn = connect_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('''
+            INSERT INTO Partiya (mahsulot_id, seriya_raqami, muddati, sotish_narxi, miqdori)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (mahsulot_id, seriya_raqami, muddati, sotish_narxi, miqdori))
+        conn.commit()
+        print(f"Partiya omborga qabul qilindi: Seriya {seriya_raqami}")
+    except Exception as e:
+        print(f"Xatolik: {e}")
+    finally:
+        conn.close()
+
 def make_sale(partiya_id, miqdori, mijoz_id=None, foydalanuvchi_id=1, tolov_turi="Naqd"):
     conn = connect_db()
     cursor = conn.cursor()
