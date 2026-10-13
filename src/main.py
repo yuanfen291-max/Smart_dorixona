@@ -13,10 +13,12 @@ def main_menu():
         print("3. Yangi dori qo'shish (Добавить лекарство)")
         print("4. Omborga dori qabul qilish (Приход на склад)")
         print("5. Sotuvni amalga oshirish (Продажа)")
+        print("6. Kam qolgan dorilarni ko'rish (Дефицит)")
+        print("7. Muddati yaqinlashgan dorilarni ko'rish")
         print("0. Chiqish (Выход)")
         print("="*45)
 
-        choice = input("Tanlang (0-5): ")
+        choice = input("Tanlang (0-7): ")
 
         if choice == '1':
             print("\n--- OMBOR QOLDIG'I ---")
@@ -55,9 +57,29 @@ def main_menu():
             miqdor = int(input("Sotiladigan miqdor: "))
             crud.make_sale(p_id, miqdor)
 
+        elif choice == '6':
+            print("\n--- KAM QOLGAN DORILAR (ZAXIRA) ---")
+            rows = crud.check_low_stock(chegara_miqdor=10)
+            if not rows:
+                print("Kam qolgan dorilar yo'q.")
+            else:
+                for r in rows:
+                    print(f"ID: {r[0]} | Dori: {r[1]} | Seriya: {r[2]} | Qoldiq: {r[3]} ta | Narxi: {r[4]}")
+
+        elif choice == '7':
+            print("\n--- YAROQLILIK MUDDATI YAQINLASHGAN DORILAR ---")
+            rows = crud.check_expiring_soon(kun_farqi=30)
+            if not rows:
+                print("Muddati yaqinlashgan dorilar yo'q.")
+            else:
+                for r in rows:
+                    print(f"ID: {r[0]} | Dori: {r[1]} | Seriya: {r[2]} | Muddati: {r[3]} | Qoldiq: {r[4]} ta")
+
         elif choice == '0':
             print("Xayr!")
             break
+        else:
+            print("Noto'g'ri tanlov! Qaytadan urinib ko'ring.")
 
 if __name__ == "__main__":
     main_menu()
