@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 
 DB_NAME = 'smart_dorixona.db'
 
@@ -70,6 +70,43 @@ def check_stock():
         FROM Partiya P
         JOIN Mahsulot M ON P.mahsulot_id = M.id
     ''')
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+
+def check_low_stock(chegara_miqdor=10):
+    """
+    Omborda miqdori belgilangan chegaradan (standart: 10 ta) kam qolgan dorilarni qaytaradi.
+    """
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT P.id, M.nomi, P.seriya_raqami, P.miqdori, P.sotish_narxi
+        FROM Partiya P
+        JOIN Mahsulot M ON P.mahsulot_id = M.id
+        WHERE P.miqdori <= ?
+    ''', (chegara_miqdor,))
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+
+def check_expiring_soon(kun_farqi=30):
+    """
+    Yaroqlilik muddati tugashiga belgilangan kundan (standart: 30 kun) kam qolgan partiyalarni qaytaradi.
+    """
+    conn = connect_db()
+    cursor = conn.cursor()
+    
+    bugun = datetime.now().date()
+    muddati_chegarasi = bugun + timedelta(days=kun_farqi)
+    
+    cursor.execute('''
+        SELECT P.id, M.nomi, P.seriya_raqami, P.muddati, P.miqdori
+        FROM Partiya P
+        JOIN Mahsulot M ON P.mahsulot_id = M.id
+        WHERE P.muddati <= ? AND P.muddati >= ?
+    ''', (muddati_chegarasi.strftime('%Y-%m-%d'), bugun.strftime('%Y-%m-%d')))
+    
     rows = cursor.fetchall()
     conn.close()
     return rows
